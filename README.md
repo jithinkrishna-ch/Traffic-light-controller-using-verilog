@@ -97,7 +97,9 @@ The testbench:
 
 ### 🖥 To simulate (using Synopsys VCS):
 vcs -sverilog traffic_sys.v tb_traffic_sys.v -debug_all
+
 ./simv
+
 verdi -sv traffic_sys.v tb_traffic_sys.v -ssf traffic_sys.fsdb &
 
 
