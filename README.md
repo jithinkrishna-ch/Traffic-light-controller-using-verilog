@@ -6,15 +6,13 @@ This project implements a 4-way traffic light controller using a **Finite State 
 
 ---
 
-## 🧠 FSM Logic
+## 📌 Project Summary
 
-The FSM operates in 8 states:
-- **s0, s1**: North direction — Green → Yellow
-- **s2, s3**: West direction — Green → Yellow
-- **s4, s5**: South direction — Green → Yellow
-- **s6, s7**: East direction — Green → Yellow
-
-Each GREEN signal stays on for up to **15 cycles**, or until a **low-priority traffic input (`t1` to `t4`) is deasserted**. YELLOW stays for **3 cycles** to ensure smooth transition.
+- **Design Style:** RTL
+- **Language:** Verilog HDL
+- **Design Methodology:** Finite State Machine (FSM)
+- **Tools Used:** Synopsys VCS, Verdi, Design Compiler, ICC2
+- **Target Application:** Digital VLSI design – Traffic Management System
 
 ---
 
@@ -29,6 +27,64 @@ Each GREEN signal stays on for up to **15 cycles**, or until a **low-priority tr
 
 ---
 
+## 🔁 FSM Design & Logic Explanation
+
+### ➤ State Encoding
+
+The FSM has **8 states** representing traffic light transitions for all 4 directions:
+
+| State | Description                    | Light Active |
+|-------|--------------------------------|--------------|
+| s0    | North Green                    | North        |
+| s1    | North Yellow                   | North        |
+| s2    | West Green                     | West         |
+| s3    | West Yellow                    | West         |
+| s4    | South Green                    | South        |
+| s5    | South Yellow                   | South        |
+| s6    | East Green                     | East         |
+| s7    | East Yellow                    | East         |
+
+### ➤ FSM Operation
+
+- Each direction is allowed **Green** for **15 clock cycles** (or until its traffic signal becomes LOW).
+- After Green, **Yellow** stays ON for **3 clock cycles** to indicate transition.
+- Then, the FSM moves to the next direction in clockwise order.
+- The cycle continues in the order: **North → West → South → East → North...**
+
+### ➤ Traffic Inputs
+
+| Signal | Description                |
+|--------|----------------------------|
+| `t1`   | Traffic presence - North   |
+| `t2`   | Traffic presence - West    |
+| `t3`   | Traffic presence - South   |
+| `t4`   | Traffic presence - East    |
+
+If a direction has **no traffic**, its green signal time may **cut short**.
+
+---
+
+## 💡 Output Encoding
+
+Each light signal is 3 bits:
+
+| Binary | Light |
+|--------|-------|
+| `100`  | RED   |
+| `001`  | GREEN |
+| `010`  | YELLOW|
+
+---
+
+## 🧪 Testbench & Simulation
+
+### 🧰 Simulation Flow
+
+1. **Clock Generation** – 10ns period (`#5 clk = ~clk`)
+2. **Reset Initialization**
+3. **Random Traffic Input Simulation** using `$random % 2`
+4. **FSM Output Monitoring**
+5. **Waveform Dump** for Verdi (`.fsdb`)
 ---
 
 ## 🧪 Simulation
@@ -40,18 +96,10 @@ The testbench:
 - Dumps waveform to `.fsdb` for **Verdi visualization**
 
 ### 🖥 To simulate (using Synopsys VCS):
-```bash
 vcs -sverilog traffic_sys.v tb_traffic_sys.v -debug_all
 ./simv
-dve -vpd vcdplus.vpd &
+verdi -sv traffic_sys.v tb_traffic_sys.v -ssf traffic_sys.fsdb &
+
 
 ---
 
-🔬 Synthesis & Physical Design Flow 
-This RTL design was also:
-
-Synthesized using Design Compiler
-
-Floorplanned, Power Planned, Placed, Routed using ICC2
-
-Clock Tree Synthesized (CTS) with timing closure
